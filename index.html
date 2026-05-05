@@ -485,4 +485,91 @@ function showDetail(p){
       <div class="sb"><div class="sl">Median HHI</div><div class="sv ${hc}">${fmtM(p.med_hhi)}</div><div class="ss">spending power</div></div>
       <div class="sb"><div class="sl">Total Population</div><div class="sv">${p.total_pop.toLocaleString()}</div><div class="ss">all residents</div></div>
     </div>
-    <div
+    <div class="rb-lbl">AA residents vs. metro max &mdash; #${rank} of ${ALL.length}</div>
+    <div class="rb-bg"><div class="rb-fg" style="width:${pct}%"></div></div>
+    <div class="tl-hd" style="margin-top:10px">Top 15 by AA Residents</div>
+    ${ALL.slice(0,15).map((d,i)=>{
+      const w=Math.min((d.black_pop/MAX_BP)*100,100).toFixed(1);
+      const dc=d.candidate,pb=dc==='none'?'#e0e0e0':CC[dc],pt=dc==='none'?'#888':'white';
+      const pl=dc==='none'?'—':dc==='both'?'B+H':dc==='bailey'?'B':'H';
+      const sel=d.zip===p.zip;
+      return '<div class="tli" onclick="cL(\''+d.zip+'\')">'
+        +'<span class="ti-r">'+(i+1)+'</span>'
+        +'<span class="ti-z" style="'+(sel?'color:#6d28d9':'')+'">'+d.zip+'</span>'
+        +'<div class="ti-b"><div class="ti-f" style="width:'+w+'%"></div></div>'
+        +'<span class="ti-v">'+fmt(d.black_pop)+'</span>'
+        +'<span class="ti-pill" style="background:'+pb+';color:'+pt+'">'+pl+'</span>'
+        +'</div>';
+    }).join('')}`;
+}
+
+function cL(zip){const p=ALL.find(d=>d.zip===zip);if(p)showDetail(p);}
+
+function buildTopList(){
+  const el=document.getElementById('top-list');
+  if(!el) return;
+  if(listMode==='hhi'){
+    const sorted=[...ALL].filter(d=>d.med_hhi>0).sort((a,b)=>b.med_hhi-a.med_hhi).slice(0,20);
+    el.innerHTML=sorted.map((d,i)=>{
+      const w=Math.min((d.med_hhi/MAX_HHI)*100,100).toFixed(1);
+      const dc=d.candidate,pb=dc==='none'?'#e0e0e0':CC[dc],pt=dc==='none'?'#888':'white';
+      const pl=dc==='none'?'—':dc==='both'?'B+H':dc==='bailey'?'B':'H';
+      return '<div class="tli" onclick="cL(\''+d.zip+'\')">'
+        +'<span class="ti-r">'+(i+1)+'</span>'
+        +'<span class="ti-z">'+d.zip+'</span>'
+        +'<div class="ti-b"><div class="ti-f" style="width:'+w+'%;background:#15803d"></div></div>'
+        +'<span class="ti-v">'+(d.med_hhi>=1000?'$'+(d.med_hhi/1000).toFixed(0)+'K':'N/A')+'</span>'
+        +'<span class="ti-pill" style="background:'+pb+';color:'+pt+'">'+pl+'</span>'
+        +'</div>';
+    }).join('');
+  } else {
+    el.innerHTML=ALL.slice(0,20).map((d,i)=>{
+      const w=Math.min((d.black_pop/MAX_BP)*100,100).toFixed(1);
+      const dc=d.candidate,pb=dc==='none'?'#e0e0e0':CC[dc],pt=dc==='none'?'#888':'white';
+      const pl=dc==='none'?'—':dc==='both'?'B+H':dc==='bailey'?'B':'H';
+      return '<div class="tli" onclick="cL(\''+d.zip+'\')">'
+        +'<span class="ti-r">'+(i+1)+'</span>'
+        +'<span class="ti-z">'+d.zip+'</span>'
+        +'<div class="ti-b"><div class="ti-f" style="width:'+w+'%"></div></div>'
+        +'<span class="ti-v">'+fmt(d.black_pop)+'</span>'
+        +'<span class="ti-pill" style="background:'+pb+';color:'+pt+'">'+pl+'</span>'
+        +'</div>';
+    }).join('');
+  }
+}
+buildTopList();
+
+// --- Pan / zoom ---
+let vx=0,vy=0,vw=900,vh=620,drag=false,sx,sy,svx,svy;
+const svg=document.getElementById('map-svg');
+function setV(){svg.setAttribute('viewBox',`${vx} ${vy} ${vw} ${vh}`);}
+svg.addEventListener('wheel',e=>{
+  e.preventDefault();
+  const rect=svg.getBoundingClientRect();
+  const mx=(e.clientX-rect.left)/rect.width;
+  const my=(e.clientY-rect.top)/rect.height;
+  const factor=e.deltaY>0?1.15:0.87;
+  const nvw=Math.min(900,Math.max(150,vw*factor));
+  const nvh=Math.min(620,Math.max(100,vh*factor));
+  vx=vx+mx*(vw-nvw);
+  vy=vy+my*(vh-nvh);
+  vw=nvw;vh=nvh;
+  setV();
+},{passive:false});
+svg.addEventListener('mousedown',e=>{
+  drag=true;sx=e.clientX;sy=e.clientY;svx=vx;svy=vy;
+  svg.style.cursor='grabbing';
+  e.preventDefault();
+});
+document.addEventListener('mousemove',e=>{
+  if(!drag) return;
+  const rect=svg.getBoundingClientRect();
+  const scx=vw/rect.width,scy=vh/rect.height;
+  vx=svx-(e.clientX-sx)*scx;
+  vy=svy-(e.clientY-sy)*scy;
+  setV();
+});
+document.addEventListener('mouseup',()=>{drag=false;svg.style.cursor='';});
+</script>
+</body>
+</html>
