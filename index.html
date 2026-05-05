@@ -384,16 +384,18 @@ function updateLegend(){
   const bar=document.getElementById('grad-bar');
   const lbl=document.getElementById('grad-lbl');
   if(listMode==='bivariate'){
-    if(title) title.textContent='AA Population × Median HHI';
+    if(title) title.textContent='AA Population x Median HHI';
     if(bar){
       bar.style.background='none';
-      bar.innerHTML=`<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;height:54px">
-        ${[2,1,0].map(ar=>[0,1,2].map(hr=>`<div style="background:${BIV[ar][hr]};border-radius:2px" title="${['Low','Med','High'][ar]} AA / ${['Low','Med','High'][hr]} HHI"></div>`).join('')).join('')}
-      </div>
-      <div style="display:flex;justify-content:space-between;font-size:9px;color:#bbb;margin-top:2px"><span>Low HHI</span><span>High HHI →</span></div>
-      <div style="font-size:9px;color:#bbb;text-align:right">High AA ↑</div>`;
+      var bh='<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:2px;height:54px">';
+      var lbs=['Low','Med','High'];
+      [2,1,0].forEach(function(ar){[0,1,2].forEach(function(hr){
+        bh+='<div style="background:'+BIV[ar][hr]+';border-radius:2px" title="'+lbs[ar]+' AA / '+lbs[hr]+' HHI"></div>';
+      });});
+      bh+='</div><div style="display:flex;justify-content:space-between;font-size:9px;color:#bbb;margin-top:2px"><span>Low HHI</span><span>High HHI</span></div><div style="font-size:9px;color:#bbb;text-align:right">High AA above</div>';
+      bar.innerHTML=bh;
     }
-    if(lbl) lbl.innerHTML='<span style="color:#3b4994;font-weight:600">★ Dark blue = high AA + high HHI</span>';
+    if(lbl) lbl.innerHTML='<span style="color:#3b4994;font-weight:600">Dark blue = high AA + high income</span>';
   } else if(listMode==='hhi'){
     if(title) title.textContent='Median HHI (fill color)';
     if(bar){bar.innerHTML='';bar.style.background='linear-gradient(to right,#dcfce7,#15803d)';}
@@ -601,21 +603,26 @@ function buildTopList(){
   const el=document.getElementById('top-list');
   if(!el) return;
   if(listMode==='bivariate'){
-    const scored=[...ALL].filter(d=>d.med_hhi>0)
-      .map(d=>({...d,score:(d.aa_pct/Math.max(...ALL.map(z=>z.aa_pct)))*(d.med_hhi/MAX_HHI)}))
-      .sort((a,b)=>b.score-a.score).slice(0,20);
-    el.innerHTML=scored.map((d,i)=>{
-      const w=Math.min(d.score*100/scored[0].score*100,100).toFixed(1);
-      const dc=d.candidate,pb=dc==='none'?'#e0e0e0':CC[dc],pt=dc==='none'?'#888':'white';
-      const pl=dc==='none'?'—':dc==='both'?'B+H':dc==='bailey'?'B':'H';
-      return '<div class="tli" onclick="cL(''+d.zip+'')">'
+    var maxAA=Math.max.apply(null,ALL.map(function(z){return z.aa_pct;}));
+    var bivScored=ALL.filter(function(d){return d.med_hhi>0;}).map(function(d){
+      return {zip:d.zip,aa_pct:d.aa_pct,med_hhi:d.med_hhi,black_pop:d.black_pop,candidate:d.candidate,score:(d.aa_pct/maxAA)*(d.med_hhi/MAX_HHI)};
+    }).sort(function(a,b){return b.score-a.score;}).slice(0,20);
+    var bivHTML='';
+    var topScore=bivScored[0]?bivScored[0].score:1;
+    bivScored.forEach(function(d,i){
+      var w=Math.min((d.score/topScore)*100,100).toFixed(1);
+      var dc=d.candidate,pb=dc==='none'?'#e0e0e0':CC[dc],pt=dc==='none'?'#888':'white';
+      var pl=dc==='none'?'--':dc==='both'?'B+H':dc==='bailey'?'B':'H';
+      var fc=bivFill(d);
+      bivHTML+='<div class="tli" onclick="cL('+JSON.stringify(d.zip)+')">'
         +'<span class="ti-r">'+(i+1)+'</span>'
         +'<span class="ti-z">'+d.zip+'</span>'
-        +'<div class="ti-b"><div class="ti-f" style="width:'+w+'%;background:'+bivFill(d)+'"></div></div>'
+        +'<div class="ti-b"><div class="ti-f" style="width:'+w+'%;background:'+fc+'"></div></div>'
         +'<span class="ti-v">'+d.aa_pct+'%/'+Math.round(d.med_hhi/1000)+'K</span>'
         +'<span class="ti-pill" style="background:'+pb+';color:'+pt+'">'+pl+'</span>'
         +'</div>';
-    }).join('');
+    });
+    el.innerHTML=bivHTML;
   } else if(listMode==='hhi'){
     const sorted=[...ALL].filter(d=>d.med_hhi>0).sort((a,b)=>b.med_hhi-a.med_hhi).slice(0,20);
     el.innerHTML=sorted.map((d,i)=>{
