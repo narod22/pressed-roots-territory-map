@@ -51,9 +51,18 @@ header p{font-size:11px;color:#888;margin-top:1px;}
 .filters{display:flex;gap:4px;flex-wrap:wrap;}
 .fbtn{font-size:11px;padding:3px 9px;border:1.5px solid #ddd;border-radius:20px;background:white;cursor:pointer;color:#555;transition:all 0.12s;}
 .fbtn:hover:not(.on){background:#f5f5f5;}
-.fbtn.on.all,.fbtn.on.top20{background:#1a1a1a;color:white;border-color:#1a1a1a;}
+.fbtn.on.all{background:#1a1a1a;color:white;border-color:#1a1a1a;}
 .fbtn.on.bailey{background:#1d4ed8;color:white;border-color:#1d4ed8;}
 .fbtn.on.haley{background:#15803d;color:white;border-color:#15803d;}
+.fbtn.on.both{background:#d97706;color:white;border-color:#d97706;}
+.fbtn.on.unassigned{background:#6b7280;color:white;border-color:#6b7280;}
+.tp-hd{font-size:10px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin:10px 0 4px;padding-top:8px;border-top:1px solid #f0ede8;color:#555;}
+.tp-hd:first-child{margin-top:0;padding-top:0;border-top:none;}
+.tp-row{display:flex;align-items:center;gap:6px;padding:4px 2px;cursor:pointer;border-radius:4px;}
+.tp-row:hover{background:#f5f5f5;}
+.tp-zip{font-size:12px;font-weight:600;min-width:40px;color:#222;}
+.tp-name{font-size:10px;color:#999;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.tp-stats{font-size:10px;color:#888;white-space:nowrap;}
 #reset-btn{font-size:10px;padding:3px 9px;border:1.5px solid #ddd;border-radius:20px;background:white;cursor:pointer;color:#888;transition:all 0.12s;white-space:nowrap;}
 #reset-btn:hover{background:#fef2f2;border-color:#fca5a5;color:#dc2626;}
 #detail{flex:1;overflow-y:auto;padding:11px 13px;font-size:12px;}
@@ -286,28 +295,26 @@ header p{font-size:11px;color:#888;margin-top:1px;}
         <button id="reset-btn">&#8635; Reset view</button>
       </div>
       <div class="filters">
-        <button class="fbtn on all" data-f="all">All Metro</button>
-        <button class="fbtn bailey" data-f="bailey">Bailey</button>
+        <button class="fbtn on all" data-f="all">All</button>
         <button class="fbtn haley" data-f="haley">Haley</button>
-        <button class="fbtn top20" data-f="top20">Top 20 TAM</button>
+        <button class="fbtn bailey" data-f="bailey">Bailey</button>
+        <button class="fbtn both" data-f="both">Overlap</button>
+        <button class="fbtn unassigned" data-f="unassigned">Available</button>
       </div>
     </div>
     <div class="pane" style="padding:8px 13px;">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-        <div class="ph3" style="margin-bottom:0">List view</div>
+        <div class="ph3" style="margin-bottom:0">Analysis</div>
         <button class="ltog" id="lbl-btn" onclick="toggleLabels()">Zip labels</button>
       </div>
       <div class="list-tabs">
-        <button class="ltab on" id="list-aa" onclick="setListMode('aa')">AA Residents</button>
-        <button class="ltab" id="list-hhi" onclick="setListMode('hhi')">Median HHI</button>
-        <button class="ltab" id="list-biv" onclick="setListMode('bivariate')">AA × HHI</button>
+        <button class="ltab on" id="list-plan" onclick="setListMode('plan')">Territory Plan</button>
+        <button class="ltab" id="list-aa" onclick="setListMode('aa')">AA Pop</button>
+        <button class="ltab" id="list-hhi" onclick="setListMode('hhi')">HHI</button>
+        <button class="ltab" id="list-biv" onclick="setListMode('bivariate')">AA x HHI</button>
       </div>
     </div>
-    <div id="detail">
-      <div class="ph">Hover any zip to preview.<br>Click to pin details &amp; system analog.</div>
-      <div class="tl-hd" id="list-heading" style="margin-top:4px">Top 20 by Absolute AA Residents</div>
-      <div id="top-list"></div>
-    </div>
+    <div id="detail"></div>
   </div>
 </div>
 
@@ -319,8 +326,8 @@ const MAX_BP=43023;
 const ANALOG={"48235": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48228": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48219": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48227": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48221": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48224": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48234": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48205": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48238": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48223": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48239": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48213": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48141": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48021": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48204": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48203": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48075": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48197": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48237": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48207": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48214": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48076": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48198": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48206": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48180": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48174": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48033": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48066": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48185": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48225": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48034": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48111": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48215": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48089": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48202": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48212": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48201": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48186": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48091": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48035": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48240": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48217": {"label": "Exceptional TAM", "color": "#4c1d95", "desc": "Dominant AA density \u2014 deepest demand signal in metro"}, "48208": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48188": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48038": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48210": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48036": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48187": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48044": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48108": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48093": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48184": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48229": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48146": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48043": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48092": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48220": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48218": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48127": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48226": {"label": "Strong TAM", "color": "#6d28d9", "desc": "High AA concentration \u2014 well above any company store"}, "48236": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48088": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48103": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48134": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48015": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48045": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48047": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48073": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48195": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48080": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48211": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48104": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48071": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48125": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48183": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48105": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48152": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48216": {"label": "Moderate TAM", "color": "#d97706", "desc": "Rivermark-level zone (24% AA) \u2014 viable with right economics"}, "48122": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48193": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48135": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48209": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48124": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48126": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48154": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48030": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48048": {"label": "Thin TAM", "color": "#dc2626", "desc": "Plano-territory (9% AA) \u2014 needs compelling HHI or footfall offset"}, "48161": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48051": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48160": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48101": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48025": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48083": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48026": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48085": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48084": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48150": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48170": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48167": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48067": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48009": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48230": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48168": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48082": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48162": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48176": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48081": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48173": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48192": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48062": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48098": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48138": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48042": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48109": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48178": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48094": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48166": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48114": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48065": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48072": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48120": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48023": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48164": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48128": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48117": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48159": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48116": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48017": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48191": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48189": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48165": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48054": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48079": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48095": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48118": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48158": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48070": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48179": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48169": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48027": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48001": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48063": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48130": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48041": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48131": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48137": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48069": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48005": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48096": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48140": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48233": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48242": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48050": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48139": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48064": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48190": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48028": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48143": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48003": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48039": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48243": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}, "48002": {"label": "Weak Signal", "color": "#9ca3af", "desc": "Below Houston threshold (6% AA) \u2014 not recommended"}};
 const CC={bailey:'#1d4ed8',haley:'#15803d',both:'#d97706',none:'#9ca3af'};
 const CL={bailey:'Bailey Territory',haley:'Haley Territory',both:'Both (Overlap)',none:'Unassigned'};
-const CSW={bailey:'0.4',haley:'0.4',both:'0.4',none:'0.4'};
-const CSC={bailey:'#c5bdb0',haley:'#c5bdb0',both:'#c5bdb0',none:'#c5bdb0'};
+const CSW={bailey:'0.9',haley:'0.9',both:'1.4',none:'0.3'};
+const CSC={bailey:'#3b82f6',haley:'#22c55e',both:'#f59e0b',none:'#d1c5bb'};
 
 function fmt(n){return n>=1000?(n/1000).toFixed(1)+'K':String(n);}
 function fmtM(n){return n>0?'$'+n.toLocaleString():'N/A';}
@@ -407,22 +414,31 @@ function updateLegend(){
   }
 }
 
-// Normalize all baked-in strokes to neutral on load
+// Set territory border colors on load
 document.querySelectorAll('.zp').forEach(e=>{
-  e.setAttribute('stroke','#c5bdb0');
-  e.setAttribute('stroke-width','0.4');
+  e.setAttribute('stroke',CSC[e.dataset.c]);
+  e.setAttribute('stroke-width',CSW[e.dataset.c]);
 });
 
 function setListMode(m){
   listMode=m;
-  document.getElementById('list-aa').classList.toggle('on',m==='aa');
-  document.getElementById('list-hhi').classList.toggle('on',m==='hhi');
-  document.getElementById('list-biv').classList.toggle('on',m==='bivariate');
-  const hd=document.getElementById('list-heading');
-  if(hd) hd.textContent=m==='aa'?'Top 20 by AA Residents':m==='hhi'?'Top 20 by Median HHI':'Top 20: AA × HHI Score';
+  ['list-plan','list-aa','list-hhi','list-biv'].forEach(function(id){
+    var el=document.getElementById(id);
+    if(el) el.classList.remove('on');
+  });
+  var activeTab=document.getElementById(m==='plan'?'list-plan':m==='aa'?'list-aa':m==='hhi'?'list-hhi':'list-biv');
+  if(activeTab) activeTab.classList.add('on');
   updateMapColors();
   updateLegend();
-  buildTopList();
+  if(m==='plan'){
+    showTerritoryPlan();
+  } else {
+    document.getElementById('detail').innerHTML=
+      '<div class="tl-hd" id="list-heading" style="margin-top:4px">'
+      +(m==='aa'?'Top 20 by AA Residents':m==='hhi'?'Top 20 by Median HHI':'Top 20: AA x HHI Score')
+      +'</div><div id="top-list"></div>';
+    buildTopList();
+  }
 }
 
 function toggleLabels(){
@@ -484,11 +500,11 @@ let activeF=new Set(['all']);
 document.querySelectorAll('.fbtn').forEach(btn=>{
   btn.addEventListener('click',()=>{
     const f=btn.dataset.f;
-    if(f==='all'){activeF=new Set(['all']);}
-    else{
-      activeF.delete('all');
-      activeF.has(f)?activeF.delete(f):activeF.add(f);
-      if(!activeF.size)activeF.add('all');
+    if(f==='all'){
+      activeF=new Set(['all']);
+    } else {
+      if(activeF.has(f)&&activeF.size===1){activeF=new Set(['all']);}
+      else{activeF=new Set([f]);}
     }
     document.querySelectorAll('.fbtn').forEach(b=>b.classList.toggle('on',activeF.has(b.dataset.f)));
     applyFilter();
@@ -496,14 +512,15 @@ document.querySelectorAll('.fbtn').forEach(btn=>{
 });
 
 function applyFilter(){
-  const sa=activeF.has('all'),sb=activeF.has('bailey'),sh=activeF.has('haley'),st=activeF.has('top20');
+  const sa=activeF.has('all'),sb=activeF.has('bailey'),sh=activeF.has('haley');
   document.querySelectorAll('.zp').forEach(el=>{
     const c=el.dataset.c,z=el.dataset.zip;
     // Match candidate directly: bailey filter = bailey-exclusive only; both filters = all assigned
-    const matchB=sb&&c==='bailey';
-    const matchH=sh&&c==='haley';
-    const matchBoth=(sb&&sh)&&c==='both';
-    const vis=sa||matchB||matchH||matchBoth||(st&&TOP20.has(z));
+    const vis=sa
+      ||(sb&&c==='bailey')
+      ||(sh&&c==='haley')
+      ||(activeF.has('both')&&c==='both')
+      ||(activeF.has('unassigned')&&c==='none');
     el.style.opacity=vis?(c==='none'?'0.5':'1'):'0.05';
   });
 }
@@ -524,10 +541,9 @@ document.getElementById('reset-btn').addEventListener('click',()=>{
     e.setAttribute('stroke-width',CSW[e.dataset.c]);
   });
   // Reset list mode
-  listMode='aa';
-  document.getElementById('list-aa').classList.add('on');
-  document.getElementById('list-hhi').classList.remove('on');
-  document.getElementById('list-biv').classList.remove('on');
+  listMode='plan';
+  ['list-aa','list-hhi','list-biv'].forEach(function(id){var el=document.getElementById(id);if(el)el.classList.remove('on');});
+  var planBtn=document.getElementById('list-plan');if(planBtn)planBtn.classList.add('on');
   updateMapColors();
   updateLegend();
   // Reset labels
@@ -599,6 +615,37 @@ function showDetail(p){
 
 function cL(zip){const p=ALL.find(d=>d.zip===zip);if(p)showDetail(p);}
 
+function tpScore(d){return d.med_hhi>0?(d.aa_pct/100)*(d.med_hhi/MAX_HHI):0;}
+
+function tpRow(d){
+  var name=(NAMES[d.zip]||'Detroit Metro').split(',')[0];
+  return '<div class="tp-row" onclick="cL('+JSON.stringify(d.zip)+')">'
+    +'<span class="tp-zip">'+d.zip+'</span>'
+    +'<span class="tp-name">'+name+'</span>'
+    +'<span class="tp-stats">'+d.aa_pct+'% &nbsp;'+fmtM(d.med_hhi)+'</span>'
+    +'</div>';
+}
+
+function showTerritoryPlan(){
+  var haley=ALL.filter(function(d){return d.candidate==='haley';}).sort(function(a,b){return tpScore(b)-tpScore(a);});
+  var both=ALL.filter(function(d){return d.candidate==='both';}).sort(function(a,b){return tpScore(b)-tpScore(a);});
+  var avail=ALL.filter(function(d){return d.candidate==='none'&&d.med_hhi>0;}).sort(function(a,b){return tpScore(b)-tpScore(a);}).slice(0,12);
+  var bailey=ALL.filter(function(d){return d.candidate==='bailey';}).sort(function(a,b){return tpScore(b)-tpScore(a);});
+  var html='<div style="padding:4px 13px 12px">';
+  html+='<div class="tp-hd" style="color:#15803d;border-top:none;padding-top:0;margin-top:0">Haley Confirmed ('+haley.length+')</div>';
+  haley.forEach(function(d){html+=tpRow(d);});
+  html+='<div class="tp-hd" style="color:#d97706">Overlap — Give to Haley ('+both.length+')</div>';
+  html+='<div style="font-size:10px;color:#bbb;margin-bottom:5px">Both candidates want these — recommend assigning to Haley.</div>';
+  both.forEach(function(d){html+=tpRow(d);});
+  html+='<div class="tp-hd">Best Available to Add to Haley (top 12)</div>';
+  html+='<div style="font-size:10px;color:#bbb;margin-bottom:5px">Ranked by AA% x Median HHI — highest opportunity zips not yet claimed.</div>';
+  avail.forEach(function(d){html+=tpRow(d);});
+  html+='<div class="tp-hd" style="color:#93a8d4">Bailey Territory FYI ('+bailey.length+')</div>';
+  bailey.forEach(function(d){html+=tpRow(d);});
+  html+='</div>';
+  document.getElementById('detail').innerHTML=html;
+}
+
 function buildTopList(){
   const el=document.getElementById('top-list');
   if(!el) return;
@@ -652,7 +699,7 @@ function buildTopList(){
     }).join('');
   }
 }
-buildTopList();
+showTerritoryPlan();
 
 // --- Pan / zoom ---
 let vx=0,vy=0,vw=900,vh=620,drag=false,sx,sy,svx,svy;
