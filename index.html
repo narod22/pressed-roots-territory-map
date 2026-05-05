@@ -461,8 +461,11 @@ function applyFilter(){
   const sa=activeF.has('all'),sb=activeF.has('bailey'),sh=activeF.has('haley'),st=activeF.has('top20');
   document.querySelectorAll('.zp').forEach(el=>{
     const c=el.dataset.c,z=el.dataset.zip;
-    const ib=el.dataset.bailey==='true',ih=el.dataset.haley==='true';
-    const vis=sa||(sb&&ib)||(sh&&ih)||(st&&TOP20.has(z));
+    // Match candidate directly: bailey filter = bailey-exclusive only; both filters = all assigned
+    const matchB=sb&&c==='bailey';
+    const matchH=sh&&c==='haley';
+    const matchBoth=(sb&&sh)&&c==='both';
+    const vis=sa||matchB||matchH||matchBoth||(st&&TOP20.has(z));
     el.style.opacity=vis?(c==='none'?'0.5':'1'):'0.05';
   });
 }
