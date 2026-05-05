@@ -512,16 +512,22 @@ document.querySelectorAll('.fbtn').forEach(btn=>{
 });
 
 function applyFilter(){
-  const sa=activeF.has('all'),sb=activeF.has('bailey'),sh=activeF.has('haley');
-  document.querySelectorAll('.zp').forEach(el=>{
-    const c=el.dataset.c,z=el.dataset.zip;
-    // Match candidate directly: bailey filter = bailey-exclusive only; both filters = all assigned
-    const vis=sa
-      ||(sb&&c==='bailey')
-      ||(sh&&c==='haley')
-      ||(activeF.has('both')&&c==='both')
-      ||(activeF.has('unassigned')&&c==='none');
-    el.style.opacity=vis?(c==='none'?'0.5':'1'):'0.05';
+  const sa=activeF.has('all');
+  const sb=activeF.has('bailey');
+  const sh=activeF.has('haley');
+  const sboth=activeF.has('both');
+  const su=activeF.has('unassigned');
+  document.querySelectorAll('.zp').forEach(function(el){
+    var cand=el.dataset.c;
+    var show;
+    if(sa) show=true;
+    else if(sb) show=(cand==='bailey');
+    else if(sh) show=(cand==='haley');
+    else if(sboth) show=(cand==='both');
+    else if(su) show=(cand==='none');
+    else show=true;
+    el.style.display=show?'':'none';
+    if(show) el.style.opacity=(cand==='none'?'0.5':'1');
   });
 }
 
@@ -533,6 +539,7 @@ document.getElementById('reset-btn').addEventListener('click',()=>{
   document.getElementById('map-svg').setAttribute('viewBox',`${vx} ${vy} ${vw} ${vh}`);
   // Reset filters
   activeF=new Set(['all']);
+  document.querySelectorAll('.zp').forEach(function(el){el.style.display='';});
   document.querySelectorAll('.fbtn').forEach(b=>b.classList.toggle('on',activeF.has(b.dataset.f)));
   applyFilter();
   // Reset stroke highlights
