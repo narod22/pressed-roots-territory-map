@@ -519,38 +519,22 @@ function applyFilter(){
   const su=activeF.has('unassigned');
   document.querySelectorAll('.zp').forEach(function(el){
     var cand=el.dataset.c;
-    var show;
-    if(sa) show=true;
-    else if(sb) show=(cand==='bailey');
-    else if(sh) show=(cand==='haley');
-    else if(sboth) show=(cand==='both');
-    else if(su) show=(cand==='none');
-    else show=true;
-    el.style.display=show?'':'none';
-    if(show) el.style.opacity=(cand==='none'?'0.5':'1');
-  });
-  // Auto-zoom to visible zips when filtered
-  if(!sa){
-    var vis=Array.from(document.querySelectorAll('.zp')).filter(function(e){return e.style.display!=='none';});
-    if(vis.length>0){
-      var mnx=Infinity,mny=Infinity,mxx=-Infinity,mxy=-Infinity;
-      vis.forEach(function(el){
-        var bb=el.getBBox();
-        if(bb.x<mnx)mnx=bb.x;
-        if(bb.y<mny)mny=bb.y;
-        if(bb.x+bb.width>mxx)mxx=bb.x+bb.width;
-        if(bb.y+bb.height>mxy)mxy=bb.y+bb.height;
-      });
-      var pad=30;
-      vx=mnx-pad;vy=mny-pad;vw=(mxx-mnx)+pad*2;vh=(mxy-mny)+pad*2;
-      var svg=document.getElementById('map-svg');
-      if(svg) svg.setAttribute('viewBox',vx+' '+vy+' '+vw+' '+vh);
+    var highlighted;
+    if(sa){
+      // All: full opacity for assigned, slightly dimmed for unassigned
+      el.style.display='';
+      el.style.opacity=(cand==='none'?'0.5':'1');
+      return;
     }
-  } else {
-    vx=INIT_VX;vy=INIT_VY;vw=INIT_VW;vh=INIT_VH;
-    var svg=document.getElementById('map-svg');
-    if(svg) svg.setAttribute('viewBox',vx+' '+vy+' '+vw+' '+vh);
-  }
+    if(sb) highlighted=(cand==='bailey');
+    else if(sh) highlighted=(cand==='haley');
+    else if(sboth) highlighted=(cand==='both');
+    else if(su) highlighted=(cand==='none');
+    else highlighted=true;
+    // Keep all zips visible — highlight selected, dim the rest
+    el.style.display='';
+    el.style.opacity=highlighted?'1':'0.12';
+  });
 }
 
 // --- Reset ---
