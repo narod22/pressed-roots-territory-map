@@ -651,13 +651,11 @@ function applyFilter(){
       el.style.opacity='1';
       return;
     }
-    if(sb) highlighted=(cand==='bailey');
-    else if(sh) highlighted=(cand==='haley');
-    else if(sboth) highlighted=(cand==='both');
-    else if(su) highlighted=(cand==='none');
-    else highlighted=true;
-    // Keep all zips visible — highlight selected, dim the rest
-    el.style.display='';
+    if(sb) el.style.display=(cand==='bailey')?'':'none';
+    else if(sh) el.style.display=(cand==='haley')?'':'none';
+    else if(sboth) el.style.display=(cand==='both')?'':'none';
+    else if(su) el.style.display=(cand==='none')?'':'none';
+    else el.style.display='';
     el.style.opacity='1';
   });
 }
