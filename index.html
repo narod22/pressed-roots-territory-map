@@ -647,16 +647,24 @@ function applyFilter(){
     var highlighted;
     if(sa){
       el.style.display='';
-      // Dim non-candidates only in territory plan mode; analysis modes need full opacity for fair comparison
       el.style.opacity='1';
+      el.setAttribute('stroke-width', CSW[cand]);
       return;
     }
-    if(sb) el.style.display=(cand==='bailey')?'':'none';
-    else if(sh) el.style.display=(cand==='haley')?'':'none';
-    else if(sboth) el.style.display=(cand==='both')?'':'none';
-    else if(su) el.style.display=(cand==='none')?'':'none';
-    else el.style.display='';
+    // Highlight selected territory via stroke-width only — never touch opacity or display
+    var match;
+    if(sb) match=(cand==='bailey');
+    else if(sh) match=(cand==='haley');
+    else if(sboth) match=(cand==='both');
+    else if(su) match=(cand==='none');
+    else match=true;
+    el.style.display='';
     el.style.opacity='1';
+    if(sa||match){
+      el.setAttribute('stroke-width', CSW[cand]);
+    } else {
+      el.setAttribute('stroke-width', '0.3');
+    }
   });
 }
 
