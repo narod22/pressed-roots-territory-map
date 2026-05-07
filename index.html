@@ -653,8 +653,8 @@ function applyFilter(){
     }
     // Highlight selected territory via stroke-width only — never touch opacity or display
     var match;
-    if(sb) match=(cand==='bailey');
-    else if(sh) match=(cand==='haley');
+    if(sb) match=(cand==='bailey'||cand==='both');
+    else if(sh) match=(cand==='haley'||cand==='both');
     else if(sboth) match=(cand==='both');
     else if(su) match=(cand==='none');
     else match=true;
